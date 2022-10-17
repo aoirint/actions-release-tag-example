@@ -1,0 +1,36 @@
+on:
+  release:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
+        required: true
+      prerelease:
+        description: "プレリリースかどうか"
+        type: boolean
+        default: true
+
+env:
+  VERSION:
+    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
+    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    steps:
+      - shell: bash
+        run: |-
+          echo "hoge" > file.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          prerelease: ${{ github.event.inputs.prerelease }}
+          files: |
+            *.txt
+          target_commitish: ${{ github.ref }}
+          # generate_release_notes: true
